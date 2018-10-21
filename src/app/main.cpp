@@ -51,16 +51,16 @@ int main () {
   lcd.cls();
 
   schInit();
-  schAddTask(samplePot, 0, 5);
+  schAddTask(samplePot, 0, 20);
   schAddTask(sampleJoystick, 2, 10);
-  schAddTask(sampleAccel, 3, 5);
-  schAddTask(sampleTemp, 5, 100);
-  schAddTask(led1ToggleTask, 7, 50);
-  schAddTask(led2ToggleTask, 57, 50);
-  schAddTask(updatePot, 11, 5);
-  schAddTask(updateJoystick, 13, 10);
-  schAddTask(updateAccel, 17, 5);
-  schAddTask(updateTemp, 19, 100);
+  schAddTask(sampleAccel, 3, 20);
+  schAddTask(sampleTemp, 7, 100);
+  schAddTask(led1ToggleTask, 11, 50);
+  schAddTask(led2ToggleTask, 61, 50);
+  schAddTask(updatePot, 1, 20);
+  schAddTask(updateJoystick, 3, 10);
+  schAddTask(updateAccel, 3, 20);
+  schAddTask(updateTemp, 13, 100);
 
   schStart();
   

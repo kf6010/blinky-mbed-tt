@@ -4,10 +4,11 @@
 #include <cmsis.h>
 #include <scheduler.h>
 
+static volatile uint32_t tickCount = 0;
 static schTCB_t schTasks[TT_SCHED_MAX_TASKS];
 
 void SysTick_Handler(void) {
-  schUpdate();
+  tickCount += 1;
 }
 
 void schInit(void) {   // initialise the scheduler
@@ -16,7 +17,6 @@ void schInit(void) {   // initialise the scheduler
     schTasks[i].task = (pVoidFunc_t)0;
     schTasks[i].delay = 0;
     schTasks[i].period = 0;
-    schTasks[i].invocations = 0;
   }
 }
 
@@ -24,32 +24,25 @@ void schStart(void) {           // start ticking
   SysTick_Config(SystemCoreClock / TT_SCHED_TICK_HZ);
 }
 
-void schUpdate(void) {          // update after a tick -- ISR
-  
-  for (uint8_t i = 0; i < TT_SCHED_MAX_TASKS; i+=1) {
-    if (schTasks[i].task) {
-      if (schTasks[i].delay == 0) {
-        schTasks[i].invocations += 1;
-        if (schTasks[i].period) {
-          schTasks[i].delay = schTasks[i].period;
-        }
-      } else {
-        schTasks[i].delay -= 1;
-      }
-    }
-  }
-}
+void schDispatch(void) {          // update after a tick -- ISR
+  __disable_irq();
+  bool isUpdateNeeded = (tickCount > 0);
+  __enable_irq();
 
-void schDispatch(void) {       // run the next task
-  
-  for (uint8_t i = 0; i < TT_SCHED_MAX_TASKS; i+=1) {
-    if (schTasks[i].invocations > 0) {
-      (*(schTasks[i].task))();
-      schTasks[i].invocations -= 1;
-      if (schTasks[i].period == 0) {
-        schRemoveTask(i);
+  while (isUpdateNeeded) {
+    for (uint8_t i = 0; i < TT_SCHED_MAX_TASKS; i+=1) {
+      if (schTasks[i].task) {
+        if (--schTasks[i].delay == 0) {
+          (*(schTasks[i].task))();
+          schTasks[i].delay = schTasks[i].period;
+        } 
       }
     }
+    __disable_irq();
+    tickCount -= 1;
+    isUpdateNeeded = (tickCount > 0);
+    __enable_irq();
+    // assert(!isUpdateNeeded);
   }
   schSleep();
 }
@@ -66,20 +59,8 @@ void schAddTask(               // add a task to the task set
   }
   assert(i < TT_SCHED_MAX_TASKS);
   schTasks[i].task = task;
-  schTasks[i].delay = delay;
+  schTasks[i].delay = delay + 1;
   schTasks[i].period = period;
-  schTasks[i].invocations = 0;
-}
-
-void schRemoveTask(            // remove a set from the task set
-  uint8_t id) {                  // identifier of the task to remove
-    
-  assert((id < TT_SCHED_MAX_TASKS) && (schTasks[id].task != (pVoidFunc_t)0));
-  
-  schTasks[id].task = (pVoidFunc_t)0;
-  schTasks[id].delay = 0;
-  schTasks[id].period = 0;
-  schTasks[id].invocations = 0;
 }
 
 void schSleep(void) {         // go to sleep, if possible, to save power

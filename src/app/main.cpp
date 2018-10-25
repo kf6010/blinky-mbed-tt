@@ -52,14 +52,14 @@ int main () {
 
   schInit();
   schAddTask(samplePot, 0, 20);
-  schAddTask(sampleJoystick, 2, 10);
-  schAddTask(sampleAccel, 3, 20);
-  schAddTask(sampleTemp, 7, 100);
+  schAddTask(sampleJoystick, 0, 10);
+  schAddTask(sampleAccel, 0, 20);
+  schAddTask(sampleTemp, 0, 100);
   schAddTask(led1ToggleTask, 11, 50);
   schAddTask(led2ToggleTask, 61, 50);
-  schAddTask(updatePot, 1, 20);
-  schAddTask(updateJoystick, 3, 10);
-  schAddTask(updateAccel, 3, 20);
+  schAddTask(updatePot, 3, 20);
+  schAddTask(updateJoystick, 7, 10);
+  schAddTask(updateAccel, 11, 20);
   schAddTask(updateTemp, 13, 100);
 
   schStart();

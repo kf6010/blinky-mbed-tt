@@ -62,13 +62,13 @@ int main () {
   schAddTask(sampleSW3, 0, 10);
   schAddTask(samplePot, 0, 20);
   schAddTask(sampleAccel, 0, 20);
-  schAddTask(sampleTemp, 0, 100);
-  schAddTask(led1ToggleTask, 11, 50);
-  schAddTask(led2ToggleTask, 61, 50);
+  schAddTask(sampleTemp, 0, 120);
+  schAddTask(led1ToggleTask, 11, 60);
+  schAddTask(led2ToggleTask, 61, 60);
   schAddTask(updatePot, 3, 20);
   schAddTask(updateJoystick, 7, 10);
-  schAddTask(updateAccel, 11, 20);
-  schAddTask(updateTemp, 13, 100);
+  schAddTask(updateAccel, 13, 20);
+  schAddTask(updateTemp, 17, 120);
   schAddTask(updateSpeaker, 0, 10);
 
   schStart();

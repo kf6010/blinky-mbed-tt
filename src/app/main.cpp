@@ -20,39 +20,47 @@ static DigitalOut red(LED_RED);
 static DigitalOut green(LED_GREEN);
 static DigitalOut led_app_red(D5);
 static DigitalOut led_app_green(D9);
-C12832 lcd(D11, D13, D12, D7, D10);
-AnalogIn pot1(A0); // Pot 1 - Left
-AnalogIn pot2(A1); // Pot 2 - Right
-float pot1Val;
-float pot2Val;
-DigitalIn joystick[5] = {D4, A2, A3, A4, A5};
-char symbols[] = {'C', 'U', 'D', 'L', 'R'};
-char joystickVal;
-MMA7660 accel(D14, D15);
-float accelVal[3];
-LM75B temp(D14, D15);
-float tempVal;
+static C12832 lcd(D11, D13, D12, D7, D10);
+static AnalogIn pot1(A0); // Pot 1 - Left
+static AnalogIn pot2(A1); // Pot 2 - Right
+static float pot1Val;
+static float pot2Val;
+static DigitalIn joystick[5] = {D4, A2, A3, A4, A5};
+static char symbols[] = {'C', 'U', 'D', 'L', 'R'};
+static char joystickVal;
+static MMA7660 accel(D14, D15);
+static float accelVal[3];
+static LM75B temp(D14, D15);
+static float tempVal;
+static DigitalIn sw2(PTC6);
+static bool sw2Pressed = false;
+static PwmOut speaker(D6);
 
-void samplePot(void);
-void sampleJoystick(void);
-void sampleAccel(void);
-void sampleTemp(void);
-void led1ToggleTask(void);
-void led2ToggleTask(void);
-void updatePot(void);
-void updateJoystick(void);
-void updateAccel(void);
-void updateTemp(void);
+static void samplePot(void);
+static void sampleJoystick(void);
+static void sampleSW2(void);
+static void sampleAccel(void);
+static void sampleTemp(void);
+static void led1ToggleTask(void);
+static void led2ToggleTask(void);
+static void updatePot(void);
+static void updateJoystick(void);
+static void updateAccel(void);
+static void updateTemp(void);
+static void updateSpeaker(void);
 
 int main () {
   red = 0;
   green = 1;
   led_app_red = 1;
   lcd.cls();
+  speaker.period_us(2272);
+  speaker.pulsewidth_us(0);
 
   schInit();
-  schAddTask(samplePot, 0, 20);
   schAddTask(sampleJoystick, 0, 10);
+  schAddTask(sampleSW2, 0, 10);
+  schAddTask(samplePot, 0, 20);
   schAddTask(sampleAccel, 0, 20);
   schAddTask(sampleTemp, 0, 100);
   schAddTask(led1ToggleTask, 11, 50);
@@ -61,6 +69,7 @@ int main () {
   schAddTask(updateJoystick, 7, 10);
   schAddTask(updateAccel, 11, 20);
   schAddTask(updateTemp, 13, 100);
+  schAddTask(updateSpeaker, 0, 10);
 
   schStart();
   
@@ -69,12 +78,12 @@ int main () {
   }
 }
 
-void samplePot(void) {
+static void samplePot(void) {
   pot1Val = pot1.read();
   pot2Val = pot2.read();
 }
 
-void sampleJoystick(void) {
+static void sampleJoystick(void) {
   int i = 0;
 
   joystickVal = '-';
@@ -86,37 +95,41 @@ void sampleJoystick(void) {
    }
 }
 
-void sampleAccel(void) {
+static void sampleSW2(void) {
+  sw2Pressed = (sw2 == 0) ? true : false;
+}
+
+static void sampleAccel(void) {
   accelVal[0] = accel.x();
   accelVal[1] = accel.y();
   accelVal[2] = accel.z();
 }
 
-void sampleTemp(void) {
+static void sampleTemp(void) {
   tempVal = temp.read();
 }
 
-void led1ToggleTask(void) {
+static void led1ToggleTask(void) {
   red = 1 - red;
 }
 
-void led2ToggleTask(void) {
+static void led2ToggleTask(void) {
   led_app_green = 1 - led_app_green;
 }
 
-void updatePot(void) {
+static void updatePot(void) {
   lcd.locate(0, 0);
   lcd.printf("L: %0.2f", pot1Val);
   lcd.locate(0, 8);
   lcd.printf("R: %0.2f", pot2Val);
 }
 
-void updateJoystick(void) {
+static void updateJoystick(void) {
   lcd.locate(0, 16);
    lcd.printf("J: %c", joystickVal);
 }
 
-void updateAccel(void) {
+static void updateAccel(void) {
   lcd.locate(43, 0);
   lcd.printf("X: %0.2f", accelVal[0]);
   lcd.locate(43, 8);
@@ -125,8 +138,17 @@ void updateAccel(void) {
   lcd.printf("Z: %0.2f", accelVal[2]);
 }
 
-void updateTemp(void) {
+static void updateTemp(void) {
   lcd.locate(86, 0);
   lcd.printf("T: %02.2f", tempVal);
+}
+
+static void updateSpeaker(void) {
+  if (sw2Pressed) {
+    speaker.pulsewidth_us(1136);
+  } 
+  else {
+    speaker.pulsewidth_us(0);
+  }
 }
 

@@ -32,13 +32,13 @@ static MMA7660 accel(D14, D15);
 static float accelVal[3];
 static LM75B temp(D14, D15);
 static float tempVal;
-static DigitalIn sw2(PTC6);
-static bool sw2Pressed = false;
+static DigitalIn sw3(PTA4);
+static bool sw3Pressed = false;
 static PwmOut speaker(D6);
 
 static void samplePot(void);
 static void sampleJoystick(void);
-static void sampleSW2(void);
+static void sampleSW3(void);
 static void sampleAccel(void);
 static void sampleTemp(void);
 static void led1ToggleTask(void);
@@ -59,7 +59,7 @@ int main () {
 
   schInit();
   schAddTask(sampleJoystick, 0, 10);
-  schAddTask(sampleSW2, 0, 10);
+  schAddTask(sampleSW3, 0, 10);
   schAddTask(samplePot, 0, 20);
   schAddTask(sampleAccel, 0, 20);
   schAddTask(sampleTemp, 0, 100);
@@ -95,8 +95,8 @@ static void sampleJoystick(void) {
    }
 }
 
-static void sampleSW2(void) {
-  sw2Pressed = (sw2 == 0) ? true : false;
+static void sampleSW3(void) {
+  sw3Pressed = (sw3 == 0) ? true : false;
 }
 
 static void sampleAccel(void) {
@@ -144,7 +144,7 @@ static void updateTemp(void) {
 }
 
 static void updateSpeaker(void) {
-  if (sw2Pressed) {
+  if (sw3Pressed) {
     speaker.pulsewidth_us(1136);
   } 
   else {

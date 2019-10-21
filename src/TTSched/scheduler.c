@@ -48,16 +48,17 @@ void schDispatch(void) {          // update after a tick -- ISR
     if (isUpdateNeeded) {
         for (uint8_t i = 0; i < TT_SCHED_MAX_TASKS; i++) {
             if (schTasks[i].task) {
-                if (--schTasks[i].delay == 0) {
+				schTasks[1].delay -= 1;
+                if (schTasks[i].delay == 0) {
                     schTasks[i].task();
                     schTasks[i].delay = schTasks[i].period;
                 }
             }
         }
+        __disable_irq();
+        tickCount -= 1;
+        __enable_irq();
     }
-    __disable_irq();
-    tickCount -= 1;
-    __enable_irq();
 
     schSleep();
 }
